@@ -6,6 +6,14 @@
 #include <set>
 #include "avl.hh"
 #include "rb.hh"
+#include "kavl.h"
+
+struct my_node {
+	uint32_t x;
+	KAVL_HEAD(struct my_node) head;
+};
+#define my_cmp(a, b) (((a)->x > (b)->x) - ((a)->x < (b)->x))
+KAVL_INIT(my, struct my_node, head, my_cmp)
 
 static double cputime(void)
 {
@@ -42,25 +50,43 @@ uint32_t test_hash(int n, uint32_t x)
 	return x;
 }
 
-void test_insert_stl(int n, uint32_t x)
+uint32_t test_insert_kavl(int n, uint32_t x)
+{
+	struct my_node *root = 0, *p, *q;
+	p = (struct my_node*)malloc(sizeof(*p));
+	for (int i = 0; i < n; ++i) {
+		p->x = x;
+		q = kavl_insert(my, &root, p, 0);
+		if (p == q) p = (struct my_node*)malloc(sizeof(*p));
+		x = hash32(x);
+	}
+	free(p);
+	x = kavl_size(head, root);
+	kavl_free(struct my_node, head, root, free);
+	return x;
+}
+
+uint32_t test_insert_stl(int n, uint32_t x)
 {
 	std::set<uint32_t> tree;
 	for (int i = 0; i < n; ++i) {
 		tree.insert(x);
 		x = hash32(x);
 	}
+	return tree.size();
 }
 
-void test_insert_avl(int n, uint32_t x)
+uint32_t test_insert_avl(int n, uint32_t x)
 {
 	avlset_int_t tree;
 	for (int i = 0; i < n; ++i) {
 		tree.insert(x);
 		x = hash32(x);
 	}
+	return tree.count;
 }
 
-void test_insert_rb(int n, uint32_t x)
+uint32_t test_insert_rb(int n, uint32_t x)
 {
 	rbset_int_t tree;
 	for (int i = 0; i < n; ++i) {
@@ -68,6 +94,7 @@ void test_insert_rb(int n, uint32_t x)
 		tree.insert(x, &is_present);
 		x = hash32(x);
 	}
+	return tree.count;
 }
 
 int main(int argc, char *argv[])
@@ -75,17 +102,26 @@ int main(int argc, char *argv[])
 	uint32_t x, n = 1000000;
 	double t;
 	if (argc > 1) n = atoi(argv[1]);
+
 	t = cputime();
 	x = test_hash(n, 11);
 	fprintf(stderr, "%.3f sec - hash [%x]\n", cputime() - t, x);
+
 	t = cputime();
-	test_insert_stl(n, 11);
-	fprintf(stderr, "%.3f sec - insert to std::set (usually RB-tree)\n", cputime() - t);
+	x = test_insert_stl(n, 11);
+	fprintf(stderr, "%.3f sec - insert to std::set (usually RB-tree) [%d]\n", cputime() - t, x);
+
 	t = cputime();
-	test_insert_rb(n, 11);
-	fprintf(stderr, "%.3f sec - insert to RB-tree\n", cputime() - t);
+	x = test_insert_rb(n, 11);
+	fprintf(stderr, "%.3f sec - insert to RB-tree [%d]\n", cputime() - t, x);
+
 	t = cputime();
-	test_insert_avl(n, 11);
-	fprintf(stderr, "%.3f sec - insert to AVL-tree\n", cputime() - t);
+	x = test_insert_avl(n, 11);
+	fprintf(stderr, "%.3f sec - insert to AVL-tree [%d]\n", cputime() - t, x);
+
+	t = cputime();
+	x = test_insert_kavl(n, 11);
+	fprintf(stderr, "%.3f sec - insert to kavl (AVL-tree) [%d]\n", cputime() - t, x);
+
 	return 0;
 }
