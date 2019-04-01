@@ -70,7 +70,6 @@ public:
 	};
 	T *insert(const T &data, bool *is_new = NULL) {
 		unsigned char stack[MAX_DEPTH];
-		Node *path[MAX_DEPTH];
 		Node *bp, *bq;
 		Node *x, *p, *q, *r = 0; // _r_ is potentially the new root
 		int which = 0, top, b1, path_len;

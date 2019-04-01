@@ -133,6 +133,7 @@ int main(int argc, char *argv[])
 			printf("  -a INT    algorithm [all]\n");
 			printf("            1: std::set, 2: RB from libavl, 3: kavl-C, 4: kavl-C++\n");
 			printf("            5: kavl-C++-no_counting, 6: RosettaCode-avl-c-v1\n");
+			return 0;
 		}
 	}
 	if (algo < 0) fprintf(stderr, "Use 'test-insert -h' to see command-line options.\n");
