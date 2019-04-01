@@ -9,6 +9,7 @@
 #include "kavl.h"
 #include "kavl-no-cnt.hpp"
 #include "rc-avl-c1.hpp"
+#include "rc-avl-cpp1.hpp"
 
 struct my_node {
 	uint32_t x;
@@ -104,6 +105,16 @@ uint32_t test_insert_RcAvlC1(int n, uint32_t x)
 	return tree.size();
 }
 
+uint32_t test_insert_RcAvlCpp1(int n, uint32_t x)
+{
+	AVLtree<uint32_t> tree;
+	for (int i = 0; i < n; ++i) {
+		tree.insert(x);
+		x = hash32(x);
+	}
+	return tree.size();
+}
+
 uint32_t test_insert_rb(int n, uint32_t x)
 {
 	rbset_t<uint32_t, cmp32> tree;
@@ -133,6 +144,7 @@ int main(int argc, char *argv[])
 			printf("  -a INT    algorithm [all]\n");
 			printf("            1: std::set, 2: RB from libavl, 3: kavl-C, 4: kavl-C++\n");
 			printf("            5: kavl-C++-no_counting, 6: RosettaCode-avl-c-v1\n");
+			printf("            7: RosettaCode-avl-cpp-v1\n");
 			return 0;
 		}
 	}
@@ -177,6 +189,12 @@ int main(int argc, char *argv[])
 		t = cputime();
 		x = test_insert_RcAvlC1(n, 11);
 		fprintf(stderr, "[algo 6] %.3f sec - insert to RcAvlC1 (AVL-tree) [%d]\n", cputime() - t - t0, x);
+	}
+
+	if (algo == 7) { // not enabled by default, as this implementation is slow
+		t = cputime();
+		x = test_insert_RcAvlCpp1(n, 11);
+		fprintf(stderr, "[algo 7] %.3f sec - insert to RcAvlCpp1 (AVL-tree) [%d]\n", cputime() - t - t0, x);
 	}
 
 	return 0;
