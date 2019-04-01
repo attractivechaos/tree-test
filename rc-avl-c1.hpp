@@ -1,23 +1,25 @@
-#include <functional>
+#pragma once
 
-template<class T, typename Less=std::less<T> >
+template<class T>
 class RcAvlC1 {
+	unsigned count; // number of elements in the tree
 	struct Node {
 		T data;
 		int height;
 		Node *kid[2];
-	} dummy, *nnil;
-	unsigned count;
-	void set_height(Node *n) {
-		n->height = 1 + (n->kid[0]->height > n->kid[1]->height? n->kid[0]->height : n->kid[1]->height);
+	};
+	inline int get_height(const Node *n) { return n? n->height : 0; }
+	inline void set_height(Node *n) {
+		int h0 = get_height(n->kid[0]), h1 = get_height(n->kid[1]);
+		n->height = 1 + (h0 > h1? h0 : h1);
 	}
-	int balance(const Node *n) { return n->kid[0]->height - n->kid[1]->height; }
-	// rotate a subtree according to dir; if new root is nil, old root is freed
-	Node *rotate(Node **rootp, int dir) {
+	inline int balance(const Node *n) { return get_height(n->kid[0]) - get_height(n->kid[1]); }
+	inline Node *rotate(Node **rootp, int dir) { // rotate a subtree according to dir; if new root is nil, old root is freed
 		Node *old_r = *rootp, *new_r = old_r->kid[dir];
-		if (nnil == (*rootp = new_r))
+		if (0 == (*rootp = new_r)) {
 			delete old_r;
-		else {
+			--count;
+		} else {
 			old_r->kid[dir] = new_r->kid[!dir];
 			set_height(old_r);
 			new_r->kid[!dir] = old_r;
@@ -33,17 +35,16 @@ class RcAvlC1 {
 				rotate(&root->kid[dir], !dir);
 			root = rotate(rootp, dir);
 		}
-		if (root != nnil) set_height(root);
+		if (root != 0) set_height(root);
 	}
-	// find the Node that contains value as data; or returns 0
 	Node *find_recur(Node *p, const T &value) {
-		return p == nnil? 0 : p->data == value? p : find_recur(p->kid[value > p->data], value);
+		return p == 0? 0 : p->data == value? p : find_recur(p->kid[value > p->data], value);
 	}
 	void insert_recur(Node **rootp, const T &value) {
 		Node *root = *rootp;
-		if (root == nnil) {
+		if (root == 0) {
 			Node *p = new Node;
-			p->height = 0, p->kid[0] = p->kid[1] = nnil, p->data = value;
+			p->height = 0, p->kid[0] = p->kid[1] = 0, p->data = value;
 			*rootp = p, ++count;
 		} else if (value != root->data) { // don't allow dup keys
 			insert_recur(&root->kid[value > root->data], value);
@@ -52,26 +53,22 @@ class RcAvlC1 {
 	}
 	void erase_recur(Node **rootp, const T &value) {
 		Node *root = *rootp;
-		if (root == nnil) return; // not found
-		// if this is the Node we want, rotate until off the tree
-		if (root->data == value)
-			if (nnil == (root = rotate(rootp, ballance(root) < 0)))
+		if (root == 0) return; // not found
+		if (root->data == value) // if this is the Node we want, rotate until off the tree
+			if (0 == (root = rotate(rootp, ballance(root) < 0)))
 				return;
 		erase_recur(&root->kid[value > root->data], value);
 		adjust_balance(rootp);
 	}
 	void destroy(Node *p) {
-		if (p->kid[0] != nnil) destroy(p->kid[0]);
-		if (p->kid[1] != nnil) destroy(p->kid[1]);
+		if (p->kid[0]) destroy(p->kid[0]);
+		if (p->kid[1]) destroy(p->kid[1]);
 		delete p;
 	}
 public:
 	Node *root;
-	RcAvlC1() : count(0) {
-		dummy.height = 0, dummy.kid[0] = dummy.kid[1] = &dummy;
-		root = nnil = &dummy;
-	}
-	~RcAvlC1() { destroy(root); root = nnil; }
+	RcAvlC1() : root(0), count(0) {};
+	~RcAvlC1() { destroy(root); }
 	unsigned size(void) const { return count; }
 	T *find(const T &data) { Node *p = find_recur(root, data); return p? &p->data : 0; }
 	void insert(const T &data) { insert_recur(&root, data); }
