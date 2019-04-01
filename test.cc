@@ -4,7 +4,7 @@
 #include <sys/time.h>
 #include <sys/resource.h>
 #include <set>
-#include "avl.hh"
+#include "kavl.hpp"
 #include "rb.hh"
 #include "kavl.h"
 
@@ -39,10 +39,6 @@ struct cmp32 {
 	}
 };
 
-typedef avlset_t<uint32_t, cmp32> avlset_int_t;
-typedef rbset_t<uint32_t, cmp32> rbset_int_t;
-typedef std::set<uint32_t> stlset_int_t;
-
 uint32_t test_hash(int n, uint32_t x)
 {
 	for (int i = 0; i < n; ++i)
@@ -76,19 +72,19 @@ uint32_t test_insert_stl(int n, uint32_t x)
 	return tree.size();
 }
 
-uint32_t test_insert_avl(int n, uint32_t x)
+uint32_t test_insert_kavlpp(int n, uint32_t x)
 {
-	avlset_int_t tree;
+	klib::Avl<uint32_t> tree;
 	for (int i = 0; i < n; ++i) {
 		tree.insert(x);
 		x = hash32(x);
 	}
-	return tree.count;
+	return tree.size();
 }
 
 uint32_t test_insert_rb(int n, uint32_t x)
 {
-	rbset_int_t tree;
+	rbset_t<uint32_t, cmp32> tree;
 	for (int i = 0; i < n; ++i) {
 		int is_present;
 		tree.insert(x, &is_present);
@@ -116,8 +112,8 @@ int main(int argc, char *argv[])
 	fprintf(stderr, "%.3f sec - insert to RB-tree [%d]\n", cputime() - t, x);
 
 	t = cputime();
-	x = test_insert_avl(n, 11);
-	fprintf(stderr, "%.3f sec - insert to AVL-tree [%d]\n", cputime() - t, x);
+	x = test_insert_kavlpp(n, 11);
+	fprintf(stderr, "%.3f sec - insert to kavlpp (AVL-tree) [%d]\n", cputime() - t, x);
 
 	t = cputime();
 	x = test_insert_kavl(n, 11);
