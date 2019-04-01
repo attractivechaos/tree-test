@@ -7,6 +7,7 @@
 #include "kavl.hpp"
 #include "rb.hh"
 #include "kavl.h"
+#include "rc-avl-c1.hpp"
 
 struct my_node {
 	uint32_t x;
@@ -82,6 +83,16 @@ uint32_t test_insert_kavlpp(int n, uint32_t x)
 	return tree.size();
 }
 
+uint32_t test_insert_RcAvlC1(int n, uint32_t x)
+{
+	RcAvlC1<uint32_t> tree;
+	for (int i = 0; i < n; ++i) {
+		tree.insert(x);
+		x = hash32(x);
+	}
+	return tree.size();
+}
+
 uint32_t test_insert_rb(int n, uint32_t x)
 {
 	rbset_t<uint32_t, cmp32> tree;
@@ -118,6 +129,10 @@ int main(int argc, char *argv[])
 	t = cputime();
 	x = test_insert_kavl(n, 11);
 	fprintf(stderr, "%.3f sec - insert to kavl (AVL-tree) [%d]\n", cputime() - t, x);
+
+	t = cputime();
+	x = test_insert_RcAvlC1(n, 11);
+	fprintf(stderr, "%.3f sec - insert to RcAvlC1 (AVL-tree) [%d]\n", cputime() - t, x);
 
 	return 0;
 }
