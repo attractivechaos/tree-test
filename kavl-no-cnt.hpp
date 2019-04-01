@@ -82,7 +82,6 @@ public:
 			if (p->balance != 0)
 				bq = q, bp = p, top = 0;
 			stack[top++] = which = (cmp > 0);
-			path[path_len++] = p;
 		}
 		++count;
 		x = new Node;
