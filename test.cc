@@ -115,39 +115,68 @@ uint32_t test_insert_rb(int n, uint32_t x)
 	return tree.count;
 }
 
+#include <getopt.h>
+
 int main(int argc, char *argv[])
 {
+	int c, algo = -1;
 	uint32_t x, n = 1000000;
-	double t;
-	if (argc > 1) n = atoi(argv[1]);
+	double t, t0;
+
+	while ((c = getopt(argc, argv, "n:a:h")) >= 0) {
+		if (c == 'n') n = atoi(optarg);
+		else if (c == 'a') algo = atoi(optarg);
+		else if (c == 'h') {
+			printf("Usage: test-insert [options]\n");
+			printf("Options:\n");
+			printf("  -n INT    number of elements to insert [%d]\n", n);
+			printf("  -a INT    algorithm [all]\n");
+			printf("            1: std::set, 2: RB from libavl, 3: kavl-C, 4: kavl-C++\n");
+			printf("            5: kavl-C++-no_counting, 6: RosettaCode-avl-c-v1\n");
+		}
+	}
+	if (algo < 0) fprintf(stderr, "Use 'test-insert -h' to see command-line options.\n");
 
 	t = cputime();
 	x = test_hash(n, 11);
+	t0 = cputime() - t;
 	fprintf(stderr, "%.3f sec - hash [%x]\n", cputime() - t, x);
 
-	t = cputime();
-	x = test_insert_stl(n, 11);
-	fprintf(stderr, "%.3f sec - insert to std::set (usually RB-tree) [%d]\n", cputime() - t, x);
+	if (algo < 0 || algo == 1) {
+		t = cputime();
+		x = test_insert_stl(n, 11);
+		fprintf(stderr, "[algo 1] %.3f sec - insert to std::set (usually RB-tree) [%d]\n", cputime() - t - t0, x);
+	}
 
-	t = cputime();
-	x = test_insert_rb(n, 11);
-	fprintf(stderr, "%.3f sec - insert to RB-tree [%d]\n", cputime() - t, x);
+	if (algo < 0 || algo == 2) {
+		t = cputime();
+		x = test_insert_rb(n, 11);
+		fprintf(stderr, "[algo 2] %.3f sec - insert to RB-tree [%d]\n", cputime() - t - t0, x);
+	}
 
-	t = cputime();
-	x = test_insert_kavl(n, 11);
-	fprintf(stderr, "%.3f sec - insert to kavl (AVL-tree; w/ counting) [%d]\n", cputime() - t, x);
+	if (algo < 0 || algo == 3) {
+		t = cputime();
+		x = test_insert_kavl(n, 11);
+		fprintf(stderr, "[algo 3] %.3f sec - insert to kavl (AVL-tree; w/ counting) [%d]\n", cputime() - t - t0, x);
+	}
 
-	t = cputime();
-	x = test_insert_kavlpp(n, 11);
-	fprintf(stderr, "%.3f sec - insert to kavlpp (AVL-tree; w/ counting) [%d]\n", cputime() - t, x);
+	if (algo < 0 || algo == 4) {
+		t = cputime();
+		x = test_insert_kavlpp(n, 11);
+		fprintf(stderr, "[algo 4] %.3f sec - insert to kavlpp (AVL-tree; w/ counting) [%d]\n", cputime() - t - t0, x);
+	}
 
-	t = cputime();
-	x = test_insert_kavlpp_no_cnt(n, 11);
-	fprintf(stderr, "%.3f sec - insert to kavlpp (AVL-tree; w/o counting) [%d]\n", cputime() - t, x);
+	if (algo < 0 || algo == 5) {
+		t = cputime();
+		x = test_insert_kavlpp_no_cnt(n, 11);
+		fprintf(stderr, "[algo 5] %.3f sec - insert to kavlpp (AVL-tree; w/o counting) [%d]\n", cputime() - t - t0, x);
+	}
 
-	t = cputime();
-	x = test_insert_RcAvlC1(n, 11);
-	fprintf(stderr, "%.3f sec - insert to RcAvlC1 (AVL-tree) [%d]\n", cputime() - t, x);
+	if (algo < 0 || algo == 6) {
+		t = cputime();
+		x = test_insert_RcAvlC1(n, 11);
+		fprintf(stderr, "[algo 6] %.3f sec - insert to RcAvlC1 (AVL-tree) [%d]\n", cputime() - t - t0, x);
+	}
 
 	return 0;
 }
