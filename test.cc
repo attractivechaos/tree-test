@@ -7,6 +7,7 @@
 #include "kavl.hpp"
 #include "rb.hh"
 #include "kavl.h"
+#include "kavl-no-cnt.hpp"
 #include "rc-avl-c1.hpp"
 
 struct my_node {
@@ -83,6 +84,16 @@ uint32_t test_insert_kavlpp(int n, uint32_t x)
 	return tree.size();
 }
 
+uint32_t test_insert_kavlpp_no_cnt(int n, uint32_t x)
+{
+	klib::AvlNoCnt<uint32_t> tree;
+	for (int i = 0; i < n; ++i) {
+		tree.insert(x);
+		x = hash32(x);
+	}
+	return tree.size();
+}
+
 uint32_t test_insert_RcAvlC1(int n, uint32_t x)
 {
 	RcAvlC1<uint32_t> tree;
@@ -123,12 +134,16 @@ int main(int argc, char *argv[])
 	fprintf(stderr, "%.3f sec - insert to RB-tree [%d]\n", cputime() - t, x);
 
 	t = cputime();
-	x = test_insert_kavlpp(n, 11);
-	fprintf(stderr, "%.3f sec - insert to kavlpp (AVL-tree) [%d]\n", cputime() - t, x);
+	x = test_insert_kavl(n, 11);
+	fprintf(stderr, "%.3f sec - insert to kavl (AVL-tree; w/ counting) [%d]\n", cputime() - t, x);
 
 	t = cputime();
-	x = test_insert_kavl(n, 11);
-	fprintf(stderr, "%.3f sec - insert to kavl (AVL-tree) [%d]\n", cputime() - t, x);
+	x = test_insert_kavlpp(n, 11);
+	fprintf(stderr, "%.3f sec - insert to kavlpp (AVL-tree; w/ counting) [%d]\n", cputime() - t, x);
+
+	t = cputime();
+	x = test_insert_kavlpp_no_cnt(n, 11);
+	fprintf(stderr, "%.3f sec - insert to kavlpp (AVL-tree; w/o counting) [%d]\n", cputime() - t, x);
 
 	t = cputime();
 	x = test_insert_RcAvlC1(n, 11);
