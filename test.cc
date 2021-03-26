@@ -52,17 +52,18 @@ uint32_t test_hash(int n, uint32_t x)
 uint32_t test_insert_kavl(int n, uint32_t x)
 {
 	struct my_node *root = 0, *p, *q;
+	uint32_t c = 0;
 	p = (struct my_node*)malloc(sizeof(*p));
 	for (int i = 0; i < n; ++i) {
 		p->x = x;
 		q = my_insert(&root, p);
 		if (p == q) p = (struct my_node*)malloc(sizeof(*p));
 		x = hash32(x);
+		++c;
 	}
 	free(p);
-	kavll_size(struct my_node, head, root, &x);
 	kavll_free(struct my_node, head, root, free);
-	return x;
+	return c;
 }
 
 uint32_t test_insert_stl(int n, uint32_t x)
